@@ -1,5 +1,4 @@
 FROM python:3.13-slim
-LABEL maintainer="shafayetsadi.me"
 
 # Installing uv
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
@@ -12,5 +11,6 @@ ENV UV_COMPILE_BYTECODE=1
 
 ADD . /app
 WORKDIR /app
-RUN uv sync --frozen
 EXPOSE 8000
+
+RUN uv sync --frozen
