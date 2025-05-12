@@ -14,3 +14,5 @@ WORKDIR /app
 EXPOSE 8000
 
 RUN uv sync --frozen
+
+CMD [ "uv run python manage.py runserver" ]

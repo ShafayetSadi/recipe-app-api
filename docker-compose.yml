@@ -5,16 +5,23 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
+      - ./core:/app/core
+      - ./users:/app/users
+      - ./project:/app/project
+      - ./manage.py:/app/manage.py
+      - ./.flake8:/app/.flake8
     command: >
-      sh -c "uv run python manage.py runserver 0.0.0.0:8000"
+      sh -c "uv run python manage.py wait_for_db &&
+             uv run python manage.py migrate && 
+             uv run python manage.py runserver 0.0.0.0:8000"
     environment:
       - DB_HOST=db
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=devpass
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:17.4-alpine
@@ -24,6 +31,11 @@ services:
       - POSTGRES_DB=devdb
       - POSTGRES_USER=devuser
       - POSTGRES_PASSWORD=devpass
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "devdb", "-U", "devuser" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   dev-db-data:
