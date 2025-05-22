@@ -25,6 +25,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
       - name: Test
         run: docker-compose run --rm app sh -c "uv run python manage.py test"
 
