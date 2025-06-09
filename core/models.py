@@ -72,6 +72,11 @@ class Recipe(models.Model):
         blank=True,
         related_name="recipes",
     )
+    ingredients = models.ManyToManyField(
+        "Ingredient",
+        blank=True,
+        related_name="recipes",
+    )
 
     def __str__(self):
         return self.title
@@ -85,6 +90,20 @@ class Tag(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="tags",
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class Ingredient(models.Model):
+    """Ingredient model for recipes."""
+
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="ingredients",
     )
 
     def __str__(self):
