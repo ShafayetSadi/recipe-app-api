@@ -67,6 +67,25 @@ class Recipe(models.Model):
         on_delete=models.CASCADE,
         related_name="recipes",
     )
+    tags = models.ManyToManyField(
+        "Tag",
+        blank=True,
+        related_name="recipes",
+    )
 
     def __str__(self):
         return self.title
+
+
+class Tag(models.Model):
+    """Tag model for recipes."""
+
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="tags",
+    )
+
+    def __str__(self):
+        return self.name
