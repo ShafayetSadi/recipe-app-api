@@ -5,6 +5,15 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.conf import settings
+import os
+import uuid
+
+
+def recipe_image_file_path(instance, filename):
+    """Generate a unique filename for uploaded recipe images."""
+    ext = filename.split(".")[-1]
+    unique_filename = f"{uuid.uuid4()}.{ext}"
+    return os.path.join("uploads", "recipe", unique_filename)
 
 
 class UserManager(BaseUserManager):
@@ -61,6 +70,11 @@ class Recipe(models.Model):
     price = models.DecimalField(max_digits=5, decimal_places=2)
     link = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
+    image = models.ImageField(
+        upload_to=recipe_image_file_path,
+        blank=True,
+        null=True,
+    )
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
