@@ -414,6 +414,53 @@ class PrivateRecipeAPITests(TestCase):
         self.assertNotIn(ingredient1, recipe.ingredients.all())
         self.assertNotIn(ingredient2, recipe.ingredients.all())
 
+    def test_filter_recipes_by_tags(self):
+        """Test filtering recipes by tags."""
+        recipe1 = create_recipe(user=self.user, title="Recipe 1")
+        recipe2 = create_recipe(user=self.user, title="Recipe 2")
+        tag1 = Tag.objects.create(user=self.user, name="Tag1")
+        tag2 = Tag.objects.create(user=self.user, name="Tag2")
+        recipe1.tags.add(tag1)
+        recipe2.tags.add(tag2)
+        _recipe3 = create_recipe(user=self.user, title="Recipe 3")
+
+        res = self.client.get(RECIPES_URL, {"tags": f"{tag1.id},{tag2.id}"})  # type: ignore
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), 2)  # type: ignore
+
+        s1 = RecipeSerializer(recipe1)
+        s2 = RecipeSerializer(recipe2)
+        s3 = RecipeSerializer(_recipe3)
+        self.assertIn(s1.data, res.data)  # type: ignore
+        self.assertIn(s2.data, res.data)  # type: ignore
+        self.assertNotIn(s3.data, res.data)  # type: ignore
+
+    def test_filter_recipes_by_ingredients(self):
+        """Test filtering recipes by ingredients."""
+        recipe1 = create_recipe(user=self.user, title="Recipe 1")
+        recipe2 = create_recipe(user=self.user, title="Recipe 2")
+        ingredient1 = Ingredient.objects.create(user=self.user, name="Ingredient1")
+        ingredient2 = Ingredient.objects.create(user=self.user, name="Ingredient2")
+        recipe1.ingredients.add(ingredient1)
+        recipe2.ingredients.add(ingredient2)
+        _recipe3 = create_recipe(user=self.user, title="Recipe 3")
+
+        res = self.client.get(
+            RECIPES_URL,
+            {"ingredients": f"{ingredient1.id},{ingredient2.id}"},  # type: ignore
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), 2)  # type: ignore
+
+        s1 = RecipeSerializer(recipe1)
+        s2 = RecipeSerializer(recipe2)
+        s3 = RecipeSerializer(_recipe3)
+        self.assertIn(s1.data, res.data)  # type: ignore
+        self.assertIn(s2.data, res.data)  # type: ignore
+        self.assertNotIn(s3.data, res.data)  # type: ignore
+
 
 class ImageUploadTests(TestCase):
     """Test image upload functionality for recipes."""
