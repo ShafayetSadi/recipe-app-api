@@ -86,47 +86,53 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class TagViewSet(
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "assigned_only",
+                OpenApiTypes.INT,
+                enum=[0, 1],
+                description="Filter attributes that are assigned to recipes.",
+            )
+        ],
+    )
+)
+class BaseRecipeAttrViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     mixins.UpdateModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
+    """Base viewset for recipe attributes."""
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Retrieve the attributes for the authenticated user."""
+        assigned_only = bool(int(self.request.query_params.get("assigned_only", 0)))
+        queryset = self.queryset
+        if assigned_only:
+            queryset = queryset.filter(recipes__isnull=False)
+        return queryset.filter(user=self.request.user).order_by("-name").distinct()
+
+    def perform_create(self, serializer):
+        """Create a new attribute."""
+        serializer.save(user=self.request.user)
+        return serializer.data
+
+
+class TagViewSet(BaseRecipeAttrViewSet):
     """View for managing tags in the database."""
 
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):  # type: ignore
-        """Retrieve the tags for the authenticated user."""
-        return self.queryset.filter(user=self.request.user).order_by("-name")
-
-    def perform_create(self, serializer):  # type: ignore
-        """Create a new tag."""
-        serializer.save(user=self.request.user)
 
 
-class IngredientViewSet(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet,
-):
+class IngredientViewSet(BaseRecipeAttrViewSet):
     """View for managing ingredients in the database."""
 
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):  # type: ignore
-        """Retrieve the ingredients for the authenticated user."""
-        return self.queryset.filter(user=self.request.user).order_by("-name")
-
-    def perform_create(self, serializer):  # type: ignore
-        """Create a new ingredient."""
-        serializer.save(user=self.request.user)
