@@ -11,6 +11,8 @@ services:
       - ./project:/app/project
       - ./manage.py:/app/manage.py
       - ./.flake8:/app/.flake8
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
     command: >
       sh -c "uv run python manage.py wait_for_db &&
              uv run python manage.py migrate && 
@@ -40,3 +42,5 @@ services:
 
 volumes:
   dev-db-data:
+  static_volume:
+  media_volume:
