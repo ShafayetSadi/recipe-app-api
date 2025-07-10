@@ -50,8 +50,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):  # type: ignore
         """Retrieve the recipes for the authenticated user."""
-        tags = self.request.query_params.get("tags")
-        ingredients = self.request.query_params.get("ingredients")
+        tags = self.request.query_params.get("tags")  # type: ignore
+        ingredients = self.request.query_params.get("ingredients")  # type: ignore
         queryset = self.queryset
         if tags:
             tag_ids = self._params_to_ints(tags)
@@ -112,11 +112,11 @@ class BaseRecipeAttrViewSet(
 
     def get_queryset(self):
         """Retrieve the attributes for the authenticated user."""
-        assigned_only = bool(int(self.request.query_params.get("assigned_only", 0)))
+        assigned_only = bool(int(self.request.query_params.get("assigned_only", 0)))  # type: ignore
         queryset = self.queryset
         if assigned_only:
-            queryset = queryset.filter(recipes__isnull=False)
-        return queryset.filter(user=self.request.user).order_by("-name").distinct()
+            queryset = queryset.filter(recipes__isnull=False)  # type: ignore
+        return queryset.filter(user=self.request.user).order_by("-name").distinct()  # type: ignore
 
     def perform_create(self, serializer):
         """Create a new attribute."""
